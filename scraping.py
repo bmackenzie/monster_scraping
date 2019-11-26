@@ -38,12 +38,44 @@ def scrape(url):
 	        if x.isdigit():
 		        total += int(x)
         stats.append(total)
+        #THIS NEEDS TO BE ADJUSTED FOR MONSTERS THAT DON'T HAVE SKILLS
         #Grabs Skills
-        skills= ""
-        for a in soup.select('.mon-stat-block__tidbit-data')[1].contents:
-            stats.append(a)
-            stats.append('break')
+        stats.append(soup.select('.mon-stat-block__tidbit-data')[1].get_text().strip())
+        #Grabs senses
+        stats.append(soup.select('.mon-stat-block__tidbit-data')[2].get_text().strip())
+        #Grabs Languages
+        stats.append(soup.select('.mon-stat-block__tidbit-data')[3].get_text().strip())
+        #Grabs CR
+        stats.append(int(soup.select('.mon-stat-block__tidbit-data')[4].get_text().strip().split(' ')[0]))
+
+        #set default value to null for monsters that don't have these traits
+        #FIX THIS
+        challenge,saves,skills,senses,languages,vulnerabilities,resistences,immunities,conimmunities = ('null','null','null','null','null','null','null','null','null')
+        for i in range(len(soup.select('.mon-stat-block__tidbit-label'))-1):
+                label = soup.select('mon-stat-block__tidbit-label')[i].get_text().strip()
+                data = soup.select('mon-stat-block__tidbit-data')[i].get_text().strip()
+                if label == 'Saving Throws':
+                    saves = data
+                elif label == 'Skills':
+                    skills = data
+                elif label == 'Damage Resistances':
+                    resistances = data
+                elif label == 'Damage Immunities':
+                    immunities = data
+                elif label == 'Damage Vulnerabilities':
+                    vulnerabilities = data
+                elif label == 'Condition Immunities':
+                    conimmunities = data
+                elif label == 'Senses':
+                    senses = data
+                elif label == 'Languages':
+                    languages = data
+                elif label == 'Challenge':
+                    challenge = data
+        stats.extend([challenge,saves,skills,senses,languages,vulnerabilities,resistences,immunities,conimmunities])
+
         print(stats)
+
 
 def add_monster(monster):
     url = request_url + monster
@@ -51,4 +83,5 @@ def add_monster(monster):
 
 add_monster('aboleth')
 
-columns = ['name', 'size', 'type', 'alignment', 'ac', 'hp', 'move', 'saves', 'Totalsaves']
+#redo columns before making DF
+columns = ['name', 'size', 'type', 'alignment', 'ac', 'hp', 'move', 'saves', 'Totalsaves', 'challenge', 'skills', 'senses', 'languages', 'vulnerabilities', 'resistances', 'immunities', 'condition_immunities']
